@@ -1,1 +1,1 @@
-https://afternoon-bayou-99031.herokuapp.com/api/persons
+https://afternoon-bayou-99031.herokuapp.com/
