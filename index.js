@@ -10,23 +10,19 @@ app.use(express.json())
 app.use(express.static('build'))
 app.use(cors())
 
-function isPost(req, res) {
+function isPost(req) {
     return (req.method === 'POST')
 }
-function isNotPost(req, res) {
+function isNotPost(req) {
     return (req.method !== 'POST')
 }
-morgan.token('data', (req, res) => {
+morgan.token('data', (req) => {
     return JSON.stringify(req.body)
 })
 app.use(morgan('tiny', {
     skip: isPost
 }))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data', { skip: isNotPost }))
-
-const generateId = (max) => {
-    return Math.floor(Math.random() * max)
-}
 
 app.get('/api/people', (req, res) => {
     Person.find({}).then(people => {
@@ -52,9 +48,9 @@ app.get('/info', (req, res) => {
         res.send(content)
     })
 })
-app.delete('/api/people/:id', (req, res) => {
+app.delete('/api/people/:id', (req, res, next) => {
     Person.findByIdAndDelete(req.params.id)
-        .then(result => {
+        .then(() => {
             res.status(204).end()
         })
         .catch(err => next(err))
@@ -62,12 +58,12 @@ app.delete('/api/people/:id', (req, res) => {
 app.post('/api/people', (req, res, next) => {
     const body = req.body
     if (!body.name || !body.number) {
-        return res.status(400).json({ error: "name or number missing" })
+        return res.status(400).json({ error: 'name or number missing' })
     }
     Person.find({ name: body.name }).exec()
         .then(result => {
             if (result.length) {
-                return res.status(400).json({ error: "name must be unique" })
+                return res.status(400).json({ error: 'name must be unique' })
             } else {
                 const person = new Person({
                     name: body.name,
